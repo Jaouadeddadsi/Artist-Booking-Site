@@ -37,6 +37,9 @@ class  Genre(db.Model):
     venue_id = db.Column(db.Integer, db.ForeignKey('venues.id'))
     artist_id = db.Column(db.Integer, db.ForeignKey('artists.id'))
 
+    def __repr__ (self):
+        return f'<Genre id: {self.id}, name: {self.name}>'
+
 class PastShow(db.Model):
     __tablename__ = 'past_shows'
     id = db.Column(db.Integer, primary_key=True)
@@ -44,12 +47,18 @@ class PastShow(db.Model):
     venue_id = db.Column(db.Integer, db.ForeignKey('venues.id'))
     artist_id = db.Column(db.Integer, db.ForeignKey('artists.id'))
 
+    def __repr__ (self):
+        return f'<PastShow id: {self.id}, name: {self.start_time}>'
+
 class UpcomingShow(db.Model):
     __tablename__ = 'upcoming_shows'
     id = db.Column(db.Integer, primary_key=True)
     start_time = db.Column(db.String(), nullable=False)
     venue_id = db.Column(db.Integer, db.ForeignKey('venues.id'))
     artist_id = db.Column(db.Integer, db.ForeignKey('artists.id'))
+
+    def __repr__(self):
+        return f'<UpcomingShow id:{self.id}, start_time: {self.start_time} >'
 
 class Venue(db.Model):
     __tablename__ = 'venues'
@@ -71,6 +80,9 @@ class Venue(db.Model):
             lazy=True, collection_class=list)
     upcoming_shows = db.relationship('UpcomingShow', backref="venue",
             lazy=True, collection_class=list)
+
+    def __repr__(self):
+        return f'<Venue id:{self.id}, name: {self.name} >'
 
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
@@ -94,6 +106,9 @@ class Artist(db.Model):
             lazy=True, collection_class=list)
     upcoming_shows = db.relationship('UpcomingShow', backref="artist",
             lazy=True, collection_class=list)
+
+    def __repr__(self):
+        return f'<Artist id:{self.id}, name: {self.name} >'
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
@@ -128,7 +143,8 @@ def index():
 @app.route('/venues')
 def venues():
   # TODO: replace with real venues data.
-  #       num_shows should be aggregated based on number of upcoming shows per venue.
+  #       num_shows should be aggregated based on
+  #       number of upcoming shows per venue.
   data=[{
     "city": "San Francisco",
     "state": "CA",
