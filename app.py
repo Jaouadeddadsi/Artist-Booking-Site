@@ -29,7 +29,9 @@ migrate = Migrate(app, db)
 #----------------------------------------------------------------------------#
 # Models.
 #----------------------------------------------------------------------------#
-class  Genre(db.Model):
+
+
+class Genre(db.Model):
     __tablename__ = "genres"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -37,8 +39,9 @@ class  Genre(db.Model):
     venue_id = db.Column(db.Integer, db.ForeignKey('venues.id'))
     artist_id = db.Column(db.Integer, db.ForeignKey('artists.id'))
 
-    def __repr__ (self):
+    def __repr__(self):
         return f'<Genre id: {self.id}, name: {self.name}>'
+
 
 class PastShow(db.Model):
     __tablename__ = 'past_shows'
@@ -47,8 +50,9 @@ class PastShow(db.Model):
     venue_id = db.Column(db.Integer, db.ForeignKey('venues.id'))
     artist_id = db.Column(db.Integer, db.ForeignKey('artists.id'))
 
-    def __repr__ (self):
+    def __repr__(self):
         return f'<PastShow id: {self.id}, name: {self.start_time}>'
+
 
 class UpcomingShow(db.Model):
     __tablename__ = 'upcoming_shows'
@@ -59,6 +63,7 @@ class UpcomingShow(db.Model):
 
     def __repr__(self):
         return f'<UpcomingShow id:{self.id}, start_time: {self.start_time} >'
+
 
 class Venue(db.Model):
     __tablename__ = 'venues'
@@ -84,8 +89,6 @@ class Venue(db.Model):
     def __repr__(self):
         return f'<Venue id:{self.id}, name: {self.name} >'
 
-
-    # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 class Artist(db.Model):
     __tablename__ = 'artists'
@@ -118,19 +121,22 @@ class Artist(db.Model):
 # Filters.
 #----------------------------------------------------------------------------#
 
+
 def format_datetime(value, format='medium'):
   date = dateutil.parser.parse(value)
   if format == 'full':
-      format="EEEE MMMM, d, y 'at' h:mma"
+      format = "EEEE MMMM, d, y 'at' h:mma"
   elif format == 'medium':
-      format="EE MM, dd, y h:mma"
+      format = "EE MM, dd, y h:mma"
   return babel.dates.format_datetime(date, format)
+
 
 app.jinja_env.filters['datetime'] = format_datetime
 
 #----------------------------------------------------------------------------#
 # Controllers.
 #----------------------------------------------------------------------------#
+
 
 @app.route('/')
 def index():
@@ -142,7 +148,8 @@ def index():
 
 @app.route('/venues')
 def venues():
-  unique_cities = [(venue.city, venue.state) for venue in Venue.query.distinct(Venue.city).all()]
+  unique_cities = [(venue.city, venue.state)
+                    for venue in Venue.query.distinct(Venue.city).all()]
   data = []
 
   for city, state in unique_cities:
@@ -160,38 +167,45 @@ def venues():
 
   return render_template('pages/venues.html', areas=data);
 
+
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
-  # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
-  # seach for Hop should return "The Musical Hop".
-  # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
-  response={
-    "count": 1,
-    "data": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
-  }
-  return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
+  search_term = request.form.get('search_term', '')
+  venues_name = [venue.name for venue in Venue.query.all()]
+  filter_names = list(
+      filter(lambda x: search_term.lower() in x.lower(), venues_name))
+  response = {}
+  response["count"] = len(filter_names)
+  response["data"] = []
+
+  for name in filter_names:
+      filtered_venue = Venue.query.filter_by(name=name).first()
+      venue_data = {}
+      venue_data["name"] = name
+      venue_data["id"] = filtered_venue.id
+      venue_data["num_upcoming_shows"] = len(filtered_venue.upcoming_shows)
+      response["data"].append(venue_data)
+
+  return render_template('pages/search_venues.html', results=response, search_term=search_term)
+
 
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
-  # shows the venue page with the given venue_id
-  # TODO: replace with real venue data from the venues table, using venue_id
   data = Venue.query.get(venue_id)
   past_shows_count = len(data.past_shows)
   upcoming_shows_count = len(data.upcoming_shows)
   return render_template('pages/show_venue.html', venue=data,
-    past_shows_count = past_shows_count, upcoming_shows_count = upcoming_shows_count)
+    past_shows_count=past_shows_count, upcoming_shows_count=upcoming_shows_count)
 
 #  Create Venue
 #  ----------------------------------------------------------------
+
 
 @app.route('/venues/create', methods=['GET'])
 def create_venue_form():
   form = VenueForm()
   return render_template('forms/new_venue.html', form=form)
+
 
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
@@ -204,6 +218,7 @@ def create_venue_submission():
   # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
   # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
   return render_template('pages/home.html')
+
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
@@ -218,33 +233,27 @@ def delete_venue(venue_id):
 #  ----------------------------------------------------------------
 @app.route('/artists')
 def artists():
-  # TODO: replace with real data returned from querying the database
-  data=[{
-    "id": 4,
-    "name": "Guns N Petals",
-  }, {
-    "id": 5,
-    "name": "Matt Quevedo",
-  }, {
-    "id": 6,
-    "name": "The Wild Sax Band",
-  }]
-  return render_template('pages/artists.html', artists=data)
+  return render_template('pages/artists.html', artists=Artist.query.all())
+
 
 @app.route('/artists/search', methods=['POST'])
 def search_artists():
-  # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
-  # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
-  # search for "band" should return "The Wild Sax Band".
-  response={
-    "count": 1,
-    "data": [{
-      "id": 4,
-      "name": "Guns N Petals",
-      "num_upcoming_shows": 0,
-    }]
-  }
-  return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
+    search_term = request.form.get('search_term', '')
+    artist_name = [artist.name for artist in Artist.query.all()]
+    filter_names = list(
+        filter(lambda x: search_term.lower() in x.lower(), artist_name))
+    response = {}
+    response["count"] = len(filter_names)
+    response["data"] = []
+
+    for name in filter_names:
+        filtered_artist = Artist.query.filter_by(name=name).first()
+        artist_data = {}
+        artist_data["name"] = name
+        artist_data["id"] = filtered_artist.id
+        artist_data["num_upcoming_shows"] = len(filtered_artist.upcoming_shows)
+        response["data"].append(artist_data)
+    return render_template('pages/search_artists.html', results=response, search_term=search_term)
 
 @app.route('/artists/<int:artist_id>')
 def show_artist(artist_id):
