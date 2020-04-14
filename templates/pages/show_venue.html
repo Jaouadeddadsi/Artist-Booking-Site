@@ -92,7 +92,19 @@ block content %}
       </div>
     </div>
     {% endfor %}
+    <button id="delete-button" class="btn btn-danger" data-id="{{ venue.id }}">
+      Delete venue
+    </button>
   </div>
 </section>
-
+<script>
+  const deleteBtn = document.getElementById("delete-button");
+  deleteBtn.onclick = function(e) {
+    const venueId = e.target.dataset["id"];
+    console.log(venueId);
+    fetch("/venues/" + venueId, {
+      method: "DELETE"
+    });
+  };
+</script>
 {% endblock %}
