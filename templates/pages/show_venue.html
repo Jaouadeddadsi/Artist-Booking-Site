@@ -62,12 +62,14 @@ block content %}
     else %}Shows{% endif %}
   </h2>
   <div class="row">
-    {%for show in venue.upcoming_shows %}
+    {%for show in upcoming_shows %}
     <div class="col-sm-4">
       <div class="tile tile-show">
-        <img src="{{ show.artist.image_link }}" alt="Show Artist Image" />
+        <img src="{{ show.artist_shows.image_link }}" alt="Show Artist Image" />
         <h5>
-          <a href="/artists/{{ show.artist_id }}">{{ show.artist.name }}</a>
+          <a href="/artists/{{ show.artist_id }}"
+            >{{ show.artist_shows.name }}</a
+          >
         </h5>
         <h6>{{ show.start_time|datetime('full') }}</h6>
       </div>
@@ -81,17 +83,21 @@ block content %}
     %}Shows{% endif %}
   </h2>
   <div class="row">
-    {%for show in venue.past_shows %}
+    {%for show in past_shows %}
     <div class="col-sm-4">
       <div class="tile tile-show">
-        <img src="{{ show.artist.image_link }}" alt="Show Artist Image" />
+        <img src="{{ show.artist_shows.image_link }}" alt="Show Artist Image" />
         <h5>
-          <a href="/artists/{{ show.artist_id }}">{{ show.artist.name }}</a>
+          <a href="/artists/{{ show.artist_id }}"
+            >{{ show.artist_shows.name }}</a
+          >
         </h5>
         <h6>{{ show.start_time|datetime('full') }}</h6>
       </div>
     </div>
     {% endfor %}
+  </div>
+  <div>
     <button id="delete-button" class="btn btn-danger" data-id="{{ venue.id }}">
       Delete venue
     </button>
